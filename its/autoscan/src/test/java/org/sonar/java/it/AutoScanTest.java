@@ -53,7 +53,6 @@ import org.slf4j.LoggerFactory;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-
 public class AutoScanTest {
 
   private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
@@ -95,7 +94,6 @@ public class AutoScanTest {
      * 1. Run the analysis as maven project
      */
     String correctConfigIssues = absolutePathFor(TARGET_ACTUAL + PROJECT_KEY + "-mvn");
-
 
     MavenBuild mavenBuild = MavenBuild.create()
       .setPom(FileLocation.of(PROJECT_LOCATION + "pom.xml").getFile().getCanonicalFile())
