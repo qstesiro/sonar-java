@@ -251,69 +251,78 @@ public class JParser {
    * @param unitName see {@link ASTParser#setUnitName(String)}
    * @throws RecognitionException in case of syntax errors
    */
-  public static CompilationUnitTree parse(
-    String version,
-    String unitName,
-    String source,
-    List<File> classpath
-  ) {
-    ASTParser astParser = ASTParser.newParser(AST.JLS14);
-    Map<String, String> options = new HashMap<>();
-    options.put(JavaCore.COMPILER_COMPLIANCE, version);
-    options.put(JavaCore.COMPILER_SOURCE, version);
-    if (MAXIMUM_SUPPORTED_JAVA_VERSION.equals(version)) {
-      options.put(JavaCore.COMPILER_PB_ENABLE_PREVIEW_FEATURES, "enabled");
+    public static CompilationUnitTree parse(
+        String version,
+        String unitName,
+        String source,
+        List<File> classpath
+    ) {
+        // astParser
+        ASTParser astParser = ASTParser.newParser(AST.JLS14);
+        // options
+        Map<String, String> options = new HashMap<>();
+        options.put(JavaCore.COMPILER_COMPLIANCE, version);
+        options.put(JavaCore.COMPILER_SOURCE, version);
+        if (MAXIMUM_SUPPORTED_JAVA_VERSION.equals(version)) {
+            options.put(JavaCore.COMPILER_PB_ENABLE_PREVIEW_FEATURES, "enabled");
+        }
+        astParser.setCompilerOptions(options);
+        // environment
+        astParser.setEnvironment(
+            classpath.stream().map(File::getAbsolutePath).toArray(String[]::new),
+            new String[]{},
+            new String[]{},
+            true
+        );
+        astParser.setUnitName(unitName);
+        astParser.setResolveBindings(true);
+        astParser.setBindingsRecovery(true);
+        // source
+        char[] sourceChars = source.toCharArray();
+        astParser.setSource(sourceChars);
+
+        // astNode
+        CompilationUnit astNode;
+        try {
+            astNode = (CompilationUnit) astParser.createAST(null);
+        } catch (Exception e) {
+            LOG.error("ECJ: Unable to parse file", e);
+            throw new RecognitionException(-1, "ECJ: Unable to parse file.", e);
+        }
+        for (IProblem problem : astNode.getProblems()) {
+            if (!problem.isError()) {
+                continue;
+            }
+            if ((problem.getID() & IProblem.Syntax) == 0) {
+                // TODO logging semantic error?
+                continue;
+            }
+            final int line = problem.getSourceLineNumber();
+            final int column = astNode.getColumnNumber(problem.getSourceStart());
+            throw new RecognitionException(
+                line,
+                "Parse error at line " + line + " column " + column + ": " + problem.getMessage()
+            );
+        }
+
+        // converter
+        JParser converter = new JParser();
+        converter.sema = new JSema(astNode.getAST());
+        converter.compilationUnit = astNode;
+        converter.tokenManager = new TokenManager(
+            lex(version, unitName, sourceChars),
+            source,
+            new DefaultCodeFormatterOptions(new HashMap<>())
+        );
+        // compilationUnit
+        JavaTree.CompilationUnitTreeImpl tree = converter.convertCompilationUnit(astNode);
+        tree.sema = converter.sema;
+
+        ASTUtils.mayTolerateMissingType(astNode.getAST());
+
+        setParents(tree);
+        return tree;
     }
-
-    astParser.setCompilerOptions(options);
-
-    astParser.setEnvironment(
-      classpath.stream().map(File::getAbsolutePath).toArray(String[]::new),
-      new String[]{},
-      new String[]{},
-      true
-    );
-    astParser.setUnitName(unitName);
-
-    astParser.setResolveBindings(true);
-    astParser.setBindingsRecovery(true);
-
-    char[] sourceChars = source.toCharArray();
-    astParser.setSource(sourceChars);
-
-    CompilationUnit astNode;
-    try {
-      astNode = (CompilationUnit) astParser.createAST(null);
-    } catch (Exception e) {
-      LOG.error("ECJ: Unable to parse file", e);
-      throw new RecognitionException(-1, "ECJ: Unable to parse file.", e);
-    }
-    for (IProblem problem : astNode.getProblems()) {
-      if (!problem.isError()) {
-        continue;
-      }
-      if ((problem.getID() & IProblem.Syntax) == 0) {
-        // TODO logging semantic error?
-        continue;
-      }
-      final int line = problem.getSourceLineNumber();
-      final int column = astNode.getColumnNumber(problem.getSourceStart());
-      throw new RecognitionException(line, "Parse error at line " + line + " column " + column + ": " + problem.getMessage());
-    }
-
-    JParser converter = new JParser();
-    converter.sema = new JSema(astNode.getAST());
-    converter.compilationUnit = astNode;
-    converter.tokenManager = new TokenManager(lex(version, unitName, sourceChars), source, new DefaultCodeFormatterOptions(new HashMap<>()));
-
-    JavaTree.CompilationUnitTreeImpl tree = converter.convertCompilationUnit(astNode);
-    tree.sema = converter.sema;
-
-    ASTUtils.mayTolerateMissingType(astNode.getAST());
-
-    setParents(tree);
-    return tree;
-  }
 
   private static void setParents(Tree node) {
     Iterator<Tree> childrenIterator = iteratorFor(node);

@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<title>README.html</title>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+
+</head>
+
+<body>
+
+<h1 id="code-quality-and-security-for-java-build-status-quality-gate-coverage">Code Quality and Security for Java <a href="https://cirrus-ci.com/github/SonarSource/sonar-java"><img src="https://api.cirrus-ci.com/github/SonarSource/sonar-java.svg?branch=master" alt="Build Status" /></a> <a href="https://next.sonarqube.com/sonarqube/dashboard?id=org.sonarsource.java%3Ajava"><img src="https://next.sonarqube.com/sonarqube/api/project_badges/measure?project=org.sonarsource.java%3Ajava&amp;metric=alert_status" alt="Quality Gate" /></a> <a href="https://next.sonarqube.com/sonarqube/component_measures/domain/Coverage?id=org.sonarsource.java%3Ajava"><img src="https://next.sonarqube.com/sonarqube/api/project_badges/measure?project=org.sonarsource.java%3Ajava&amp;metric=coverage" alt="Coverage" /></a></h1>
+<p>This SonarSource project is a code analyzer for Java projects. Information about the analysis of Java features is available <a href="https://redirect.sonarsource.com/plugins/java.html">here</a>.</p>
+<h2 id="features">Features</h2>
+<ul>
+<li>500+ rules (including 100+ bug detection rules and 300+ code smells)</li>
+<li>Metrics (complexity, number of lines etc.)</li>
+<li>Import of <a href="https://docs.sonarqube.org/display/PLUG/Code+Coverage+by+Unit+Tests+for+Java+Project">test coverage reports</a></li>
+<li><a href="https://docs.sonarqube.org/latest/analysis/languages/java/">Custom rules</a></li>
+</ul>
+<h2 id="useful-links">Useful links</h2>
+<ul>
+<li><a href="https://redirect.sonarsource.com/plugins/java.html">Project homepage</a></li>
+<li><a href="https://jira.sonarsource.com/browse/SONARJAVA/">Issue tracking</a></li>
+<li><a href="https://rules.sonarsource.com/java">Available rules</a></li>
+<li><a href="https://community.sonarsource.com/">SonarQube Community Forum</a></li>
+<li><a href="https://next.sonarqube.com/sonarqube/dashboard?id=org.sonarsource.java%3Ajava">Demo project analysis</a></li>
+</ul>
+<h2 id="have-question-or-feedback">Have question or feedback?</h2>
+<p>To provide feedback (request a feature, report a bug etc.) use the <a href="https://community.sonarsource.com/">SonarQube Community Forum</a>. Please do not forget to specify the language (Java!), plugin version and SonarQube version.</p>
+<p>If you have a question on how to use plugin (and the <a href="https://docs.sonarqube.org/latest/analysis/languages/java/">docs</a> don’t help you), we also encourage you to use the community forum.</p>
+<h2 id="contributing">Contributing</h2>
+<h3 id="topic-in-sonarqube-community-forum">Topic in SonarQube Community Forum</h3>
+<p>To request a new feature, please create a new thread in <a href="https://community.sonarsource.com/">SonarQube Community Forum</a>. Even if you plan to implement it yourself and submit it back to the community, please start a new thread first to be sure that we can use it.</p>
+<h3 id="pull-request-pr">Pull Request (PR)</h3>
+<p>To submit a contribution, create a pull request for this repository. Please make sure that you follow our <a href="https://github.com/SonarSource/sonar-developer-toolset#code-style">code style</a> and all <a href="#testing">tests</a> are passing (all checks must be green).</p>
+<h3 id="custom-rules">Custom Rules</h3>
+<p>If you have an idea for a rule but you are not sure that everyone needs it you can implement a <a href="https://docs.sonarqube.org/latest/analysis/languages/java/">custom rule</a> available only for you. Note that in order to help you, we highly recommend to first follow the <a href="https://redirect.sonarsource.com/doc/java-custom-rules-guide.html">Custom Rules 101 tutorial</a> before diving directly into implementing rules from scratch.</p>
+<h3 id="work-with-us">Work with us</h3>
+<p>Would you like to work on this project full-time? We are hiring! Check out https://www.sonarsource.com/hiring</p>
+<p><a name="testing"></a> Testing ——-</p>
+<p>To run tests locally follow these instructions.</p>
+<h3 id="build-the-project-and-run-unit-tests">Build the Project and Run Unit Tests</h3>
+<p>To build the plugin and run its unit tests, execute this command from the project’s root directory:</p>
+<pre><code>mvn clean install</code></pre>
+<h3 id="integration-tests">Integration Tests</h3>
+<p>To run integration tests, you will need to create a properties file like the one shown below, and set the url pointing to its location in an environment variable named <code>ORCHESTRATOR_CONFIG_URL</code>.</p>
+<pre><code># version of SonarQube Server
+sonar.runtimeVersion=7.9
+
+orchestrator.updateCenterUrl=http://update.sonarsource.org/update-center-dev.properties
+
+# Location of Maven local repository is not automatically guessed. It can also be set with the env variable MAVEN_LOCAL_REPOSITORY.
+maven.localRepository=/home/myName/.m2/repository</code></pre>
+<p>With for instance the <code>ORCHESTRATOR_CONFIG_URL</code> variable being set as:</p>
+<pre><code>export ORCHESTRATOR_CONFIG_URL=file:///home/user/workspace/orchestrator.properties</code></pre>
+<p>Before running the ITs, be sure your MAVEN_HOME environment variable is set.</p>
+<h4 id="sanity-test">Sanity Test</h4>
+<p>The “Sanity Test” is a test which runs all checks against all the test sources files without taking into account the result of the analysis. It verifies that rules are not crashing on any file in our test sources. By default, this test is excluded from the build. To launch it:</p>
+<pre><code>mvn clean install -P sanity</code></pre>
+<h4 id="plugin-test">Plugin Test</h4>
+<p>The “Plugin Test” is an integration test suite which verifies plugin features such as metric calculation, coverage etc. To launch it:</p>
+<pre><code>mvn clean install -Pit-plugin</code></pre>
+<h4 id="ruling-test">Ruling Test</h4>
+<p>The “Ruling Test” are an integration test suite which launches the analysis of a large code base, saves the issues created by the plugin in report files, and then compares those results to the set of expected issues (stored as JSON files).</p>
+<p>To run the test, first make sure the submodules are checked out:</p>
+<pre><code>git submodule init
+git submodule update</code></pre>
+<p>Launch ruling test:</p>
+<pre><code>cd its/ruling
+mvn clean install -DskipTests=false</code></pre>
+<p>This test gives you the opportunity to examine the issues created by each rule and make sure they’re what you expect. Any implemented rule is highly likely to raise issues on the multiple projects we use as ruling code base.</p>
+<ul>
+<li><p>For newly implemented rule, it means that a first build will most probably fail, caused by differences between expected results (without any values for the new rule) and the new results. You can inspect these new issues by searching for files named after your rule (<code>squid-SXXXX.json</code>) in the following folder:</p>
+<pre><code>  /path/to/project/sonar-java/its/ruling/target/actual/...</code></pre></li>
+<li><p>For existing rules which are modified, you may expect some differences between “actual” (from new analysis) and expected results. Review carefully the changes which are shown and update the expected resources accordingly.</p></li>
+</ul>
+<p>All the <code>json</code> files contain a list of lines, indexed by file, expliciting where the issues raised by a specific rule are located. If/When everything looks good to you, you can copy the file with the actual issues located at:</p>
+<pre><code>its/ruling/target/actual/</code></pre>
+<p>Into the directory with the expected issues:</p>
+<pre><code>its/ruling/src/test/resources/</code></pre>
+<p>For example using the command:</p>
+<pre><code>cp its/ruling/target/actual/* its/ruling/src/test/resources/</code></pre>
+<h3 id="license">License</h3>
+<p>Copyright 2012-2020 SonarSource.</p>
+<p>Licensed under the <a href="https://www.gnu.org/licenses/lgpl.txt">GNU Lesser General Public License, Version 3.0</a></p>
+
+</body>
+</html>

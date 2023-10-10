@@ -72,7 +72,8 @@ public class JavaSquid {
         codeVisitors = Iterables.concat(codeVisitors, Arrays.asList(new FileLinesVisitor(sonarComponents), new SyntaxHighlighterVisitor(sonarComponents)));
         testCodeVisitors.add(new SyntaxHighlighterVisitor(sonarComponents));
       }
-      classpath = sonarComponents.getJavaClasspath();
+      classpath = sonarComponents.// getJavaClasspath()
+          ;
       testClasspath = sonarComponents.getJavaTestClasspath();
       jspClasspath = sonarComponents.getJspClasspath();
       testCodeVisitors.addAll(sonarComponents.testCheckClasses());
@@ -81,8 +82,16 @@ public class JavaSquid {
 
     //AstScanner for main files
     astScanner = new JavaAstScanner(sonarComponents);
-    astScanner.setVisitorBridge(createVisitorBridge(codeVisitors, classpath, javaVersion, sonarComponents,
-      SymbolicExecutionMode.getMode(visitors), postAnalysisIssueFilter));
+    astScanner.setVisitorBridge(
+        createVisitorBridge(
+            codeVisitors,
+            classpath,
+            javaVersion,
+            sonarComponents,
+            SymbolicExecutionMode.getMode(visitors),
+            postAnalysisIssueFilter
+        )
+    );
 
     //AstScanner for test files
     astScannerForTests = new JavaAstScanner(sonarComponents);

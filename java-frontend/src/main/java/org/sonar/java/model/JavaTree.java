@@ -159,8 +159,13 @@ public abstract class JavaTree implements Tree {
     private final SyntaxToken eofToken;
     public JSema sema;
 
-    public CompilationUnitTreeImpl(@Nullable PackageDeclarationTree packageDeclaration, List<ImportClauseTree> imports, List<Tree> types,
-      @Nullable ModuleDeclarationTree moduleDeclaration, SyntaxToken eofToken) {
+    public CompilationUnitTreeImpl(
+        @Nullable PackageDeclarationTree packageDeclaration,
+        List<ImportClauseTree> imports,
+        List<Tree> types,
+        @Nullable ModuleDeclarationTree moduleDeclaration,
+        SyntaxToken eofToken
+    ) {
       this.root = this;
       this.packageDeclaration = packageDeclaration;
       this.imports = imports;
@@ -227,7 +232,12 @@ public abstract class JavaTree implements Tree {
     private final ExpressionTree packageName;
     private final SyntaxToken semicolonToken;
 
-    public PackageDeclarationTreeImpl(List<AnnotationTree> annotations, SyntaxToken packageKeyword, ExpressionTree packageName, SyntaxToken semicolonToken) {
+    public PackageDeclarationTreeImpl(
+        List<AnnotationTree> annotations,
+        SyntaxToken packageKeyword,
+        ExpressionTree packageName,
+        SyntaxToken semicolonToken
+    ) {
       this.annotations = Objects.requireNonNull(annotations);
       this.packageKeyword = packageKeyword;
       this.packageName = packageName;

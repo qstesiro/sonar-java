@@ -40,62 +40,59 @@ import org.sonar.plugins.surefire.SurefireExtensions;
 
 public class JavaPlugin implements Plugin {
 
+    @SuppressWarnings("unchecked")
+    @Override
+    public void define(Context context) {
+        ImmutableList.Builder<Object> builder = ImmutableList.builder();
+        if (context.getRuntime().getProduct() == SonarProduct.SONARLINT) {
+            builder.add(JavaSonarLintClasspath.class);
+        } else {
+            builder.addAll(SurefireExtensions.getExtensions());
+            builder.add(DroppedPropertiesSensor.class);
+            builder.add(JavaSonarWayProfile.class);
+            builder.add(JavaClasspath.class);
+            builder.add(PropertyDefinition.builder(SonarComponents.FAIL_ON_EXCEPTION_KEY)
+                        .defaultValue("false")
+                        .hidden()
+                        .name("Fail on exceptions")
+                        .description("when set to true, if an exception is thrown by the analyzer the analysis will fail")
+                        .build());
 
-  @SuppressWarnings("unchecked")
-  @Override
-  public void define(Context context) {
-    ImmutableList.Builder<Object> builder = ImmutableList.builder();
-    if (context.getRuntime().getProduct() == SonarProduct.SONARLINT) {
-      builder.add(JavaSonarLintClasspath.class);
-    } else {
-      builder.addAll(SurefireExtensions.getExtensions());
-      builder.add(DroppedPropertiesSensor.class);
-      builder.add(JavaSonarWayProfile.class);
-      builder.add(JavaClasspath.class);
-      builder.add(PropertyDefinition.builder(SonarComponents.FAIL_ON_EXCEPTION_KEY)
-        .defaultValue("false")
-        .hidden()
-        .name("Fail on exceptions")
-        .description("when set to true, if an exception is thrown by the analyzer the analysis will fail")
-        .build());
-
-      ExternalReportExtensions.define(context);
+            ExternalReportExtensions.define(context);
+        }
+        if (supportJspTranspilation(context)) {
+            builder.add(Jasper.class);
+        }
+        builder.addAll(JavaClasspathProperties.getProperties());
+        builder.add(
+            JavaTestClasspath.class,
+            Java.class,
+            PropertyDefinition.builder(Java.FILE_SUFFIXES_KEY)
+            .defaultValue(Java.DEFAULT_FILE_SUFFIXES)
+            .category(JavaConstants.JAVA_CATEGORY)
+            .name("File suffixes")
+            .multiValues(true)
+            .description("Comma-separated list of suffixes for files to analyze. To not filter, leave the list empty.")
+            .subCategory("General")
+            .onQualifiers(Qualifiers.PROJECT)
+            .build(),
+            JavaRulesDefinition.class,
+            SonarComponents.class,
+            DefaultJavaResourceLocator.class,
+            JavaSquidSensor.class,
+            PostAnalysisIssueFilter.class,
+            XmlFileSensor.class
+        );
+        builder.add(AnalysisWarningsWrapper.class);
+        context.addExtensions(builder.build());
     }
-    if (supportJspTranspilation(context)) {
-      builder.add(Jasper.class);
+
+    private static boolean supportJspTranspilation(Context context) {
+        if (context.getRuntime().getProduct() != SonarProduct.SONARQUBE) {
+            return false;
+        }
+        SonarEdition edition = context.getRuntime().getEdition();
+        boolean greaterThan83 = context.getSonarQubeVersion().isGreaterThanOrEqual(Version.create(8, 3));
+        return edition != SonarEdition.COMMUNITY && greaterThan83;
     }
-    builder.addAll(JavaClasspathProperties.getProperties());
-    builder.add(
-      JavaTestClasspath.class,
-      Java.class,
-      PropertyDefinition.builder(Java.FILE_SUFFIXES_KEY)
-        .defaultValue(Java.DEFAULT_FILE_SUFFIXES)
-        .category(JavaConstants.JAVA_CATEGORY)
-        .name("File suffixes")
-        .multiValues(true)
-        .description("Comma-separated list of suffixes for files to analyze. To not filter, leave the list empty.")
-        .subCategory("General")
-        .onQualifiers(Qualifiers.PROJECT)
-        .build(),
-      JavaRulesDefinition.class,
-      SonarComponents.class,
-      DefaultJavaResourceLocator.class,
-      JavaSquidSensor.class,
-      PostAnalysisIssueFilter.class,
-      XmlFileSensor.class
-      );
-
-    builder.add(AnalysisWarningsWrapper.class);
-
-    context.addExtensions(builder.build());
-  }
-
-  private static boolean supportJspTranspilation(Context context) {
-    if (context.getRuntime().getProduct() != SonarProduct.SONARQUBE) {
-      return false;
-    }
-    SonarEdition edition = context.getRuntime().getEdition();
-    boolean greaterThan83 = context.getSonarQubeVersion().isGreaterThanOrEqual(Version.create(8, 3));
-    return edition != SonarEdition.COMMUNITY && greaterThan83;
-  }
 }

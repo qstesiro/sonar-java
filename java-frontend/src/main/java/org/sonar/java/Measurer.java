@@ -43,19 +43,19 @@ import org.sonar.plugins.java.api.tree.Tree;
 
 public class Measurer extends SubscriptionVisitor {
 
-  private final SensorContext sensorContext;
-  private final NoSonarFilter noSonarFilter;
-  private InputFile sonarFile;
-  private int methods;
-  private final Deque<ClassTree> classTrees = new LinkedList<>();
-  private int classes;
+    private final SensorContext sensorContext;
+    private final NoSonarFilter noSonarFilter;
+    private InputFile sonarFile;
+    private int methods;
+    private final Deque<ClassTree> classTrees = new LinkedList<>();
+    private int classes;
 
   public Measurer(SensorContext context, NoSonarFilter noSonarFilter) {
     this.sensorContext = context;
     this.noSonarFilter = noSonarFilter;
   }
 
-  public class TestFileMeasurer implements JavaFileScanner {
+    public class TestFileMeasurer implements JavaFileScanner {
     @Override
     public void scanFile(JavaFileScannerContext context) {
       sonarFile = context.getInputFile();
@@ -63,7 +63,7 @@ public class Measurer extends SubscriptionVisitor {
     }
   }
 
-  @Override
+    @Override
   public List<Tree.Kind> nodesToVisit() {
     return Arrays.asList(Tree.Kind.CLASS, Tree.Kind.INTERFACE, Tree.Kind.ENUM, Tree.Kind.ANNOTATION_TYPE,
         Tree.Kind.NEW_CLASS, Tree.Kind.ENUM_CONSTANT,
@@ -93,7 +93,7 @@ public class Measurer extends SubscriptionVisitor {
     saveMetricOnFile(CoreMetrics.STATEMENTS, new StatementVisitor().numberOfStatements(context.getTree()));
     saveMetricOnFile(CoreMetrics.NCLOC, new LinesOfCodeVisitor().linesOfCode(context.getTree()));
 
-    saveMetricOnFile(CoreMetrics.COGNITIVE_COMPLEXITY, CognitiveComplexityVisitor.compilationUnitComplexity(context.getTree()));
+    saveMetricOnFile(CoreMetrics.COGNITIVE_COMPLEXITY, CognitiveComplexityVisitor.compilationUnitCompjlexity(context.getTree()));
   }
 
   private boolean isSonarLintContext() {
@@ -107,34 +107,34 @@ public class Measurer extends SubscriptionVisitor {
     return commentLinesVisitor;
   }
 
-  @Override
-  public void visitNode(Tree tree) {
-    if (isClassTree(tree)) {
-      classes++;
-      classTrees.push((ClassTree) tree);
-    }
-    if (tree.is(Tree.Kind.NEW_CLASS) && ((NewClassTree) tree).classBody() != null) {
-      classes--;
-    }
-    if (tree.is(Tree.Kind.METHOD, Tree.Kind.CONSTRUCTOR) && classTrees.peek().simpleName() != null) {
-      //don't count methods in anonymous classes.
-      methods++;
+    @Override
+    public void visitNode(Tree tree) {
+        if (isClassTree(tree)) {
+            classes++;
+            classTrees.push((ClassTree) tree);
+        }
+        if (tree.is(Tree.Kind.NEW_CLASS) && ((NewClassTree) tree).classBody() != null) {
+            classes--;
+        }
+        if (tree.is(Tree.Kind.METHOD, Tree.Kind.CONSTRUCTOR) && classTrees.peek().simpleName() != null) {
+            //don't count methods in anonymous classes.
+            methods++;
+        }
+
     }
 
-  }
-
-  @Override
-  public void leaveNode(Tree tree) {
-    if (isClassTree(tree)) {
-      classTrees.pop();
+    @Override
+    public void leaveNode(Tree tree) {
+        if (isClassTree(tree)) {
+            classTrees.pop();
+        }
     }
-  }
 
-  private static boolean isClassTree(Tree tree) {
-    return tree.is(Tree.Kind.CLASS) || tree.is(Tree.Kind.INTERFACE) || tree.is(Tree.Kind.ENUM) || tree.is(Tree.Kind.ANNOTATION_TYPE);
-  }
+    private static boolean isClassTree(Tree tree) {
+        return tree.is(Tree.Kind.CLASS) || tree.is(Tree.Kind.INTERFACE) || tree.is(Tree.Kind.ENUM) || tree.is(Tree.Kind.ANNOTATION_TYPE);
+    }
 
-  private <T extends Serializable> void saveMetricOnFile(Metric<T> metric, T value) {
-    sensorContext.<T>newMeasure().forMetric(metric).on(sonarFile).withValue(value).save();
-  }
+    private <T extends Serializable> void saveMetricOnFile(Metric<T> metric, T value) {
+        sensorContext.<T>newMeasure().forMetric(metric).on(sonarFile).withValue(value).save();
+    }
 }
