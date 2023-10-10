@@ -72,8 +72,7 @@ public class JavaSquid {
         codeVisitors = Iterables.concat(codeVisitors, Arrays.asList(new FileLinesVisitor(sonarComponents), new SyntaxHighlighterVisitor(sonarComponents)));
         testCodeVisitors.add(new SyntaxHighlighterVisitor(sonarComponents));
       }
-      classpath = sonarComponents.// getJavaClasspath()
-          ;
+      classpath = sonarComponents.getJavaClasspath();
       testClasspath = sonarComponents.getJavaTestClasspath();
       jspClasspath = sonarComponents.getJspClasspath();
       testCodeVisitors.addAll(sonarComponents.testCheckClasses());
